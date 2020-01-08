@@ -1,3 +1,4 @@
+import traceback
 from contextlib import contextmanager
 
 from sqlalchemy import create_engine, Column, Integer, String, DATETIME, Text, ForeignKey, Index, Table, and_, or_, func
@@ -5,6 +6,7 @@ from sqlalchemy.orm import relationship, backref, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
 from conf import conf
+from logger.logger import cel_logger
 from util.datetime import now
 
 engine = create_engine(
@@ -55,7 +57,7 @@ def session_cxt():
         s.commit()
     except Exception as ex:
         s.rollback()
-        print(ex)  # todo: 日志，输出详细sql错误
+        cel_logger.error(traceback.format_exc(ex))
     finally:
         s.expunge_all()
         s.close()

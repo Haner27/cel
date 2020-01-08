@@ -2,3 +2,4 @@ celery
 mysqlclient
 sqlalchemy
 pyaml
+confluent-kafka

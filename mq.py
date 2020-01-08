@@ -3,7 +3,8 @@ import pkgutil
 
 from celery import Celery
 
-from conf import conf, celery_conf
+from conf import conf
+from conf.celer_conf import celery_conf
 import task_hook  # 加载hook方法
 
 __author__ = 'nengfang.han'

@@ -1,8 +1,10 @@
 def test_async():
-    from task.test_task import fail, right, add
-    fail.delay(100, y=2)
-    right.delay(27, y=2)
-    add.delay(100, y=99)
+    from task.test_task import fail, right, add, div
+    # fail.delay(100, y=2)
+    # right.delay(27, y=2)
+    # add.delay(100, y=99)
+    div.delay(100, 0)
+    # div.delay(100, 2)
 
 
 if __name__ == '__main__':

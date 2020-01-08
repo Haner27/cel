@@ -21,6 +21,16 @@ def add(self, x, y):
 
 
 @celery_app.task(
+    bind=True,
+    exchange='mq',
+    routing_key='mq'
+)
+def div(self, x, y):
+    sleep(1)
+    return x / y
+
+
+@celery_app.task(
     exchange='fans',
     routing_key='celery'
 )

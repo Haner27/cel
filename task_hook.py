@@ -3,6 +3,7 @@ import traceback
 
 from celery.signals import before_task_publish, after_task_publish, task_prerun, task_postrun, task_failure
 
+from logger.logger import cel_logger, cel_logger
 from model.mysql import session_cxt
 from model.mysql.task import Task
 from util.datetime import now
@@ -15,16 +16,16 @@ def before_task_publish_handler(body=None, **kwargs):
     """
     任务发布前回调处理器
     """
+    task_id = kwargs['headers']['id']
+    queue_name = kwargs['declare'][0].name
     try:
         with session_cxt() as s:
             task = Task()
-
-            task.task_id = kwargs['headers']['id']
+            task.task_id = task_id
             task_name = kwargs['headers']['task']
             args = kwargs['headers']['argsrepr']
             func_kwargs = kwargs['headers']['kwargsrepr']
             task.type = Task.ASYNC_TASK
-            queue_name = kwargs['declare'][0].name
             if queue_name.find('schedule') >= 0:
                 task.type = Task.PERIODIC_TASK
             last_dot_index = task_name.rfind('.')
@@ -37,8 +38,11 @@ def before_task_publish_handler(body=None, **kwargs):
             task.status = Task.PRE_PUBLISH
 
             s.add(task)
-    except Exception as e:
-        print(traceback.format_exc(e))  # todo: 记录日志
+            cel_logger.info('[PRE_PUBLISH]task: {}'.format(task_id))
+    except Exception as ex:
+        cel_logger.error('[PRE_PUBLISH][EXCEPTION]task: {}\nexception: \n{}'.format(
+            task_id, traceback.format_exc(ex))
+        )
 
 
 @after_task_publish.connect
@@ -46,16 +50,17 @@ def after_task_publish_handler(body=None, **kwargs):
     """
     任务发布后回调处理器
     """
+    task_id = kwargs['headers']['id']
     try:
-        task_id = kwargs['headers']['id']
         with session_cxt() as s:
             task = s.query(Task).filter(Task.task_id == task_id).first()
             if task:
                 task.post_publish_at = now()
                 task.status = Task.POST_PUBLISH
                 s.add(task)
-    except Exception as e:
-        print(traceback.format_exc(e))  # todo: 记录日志
+                cel_logger.info('[POST_PUBLISH]task: {}'.format(task_id))
+    except Exception as ex:
+        cel_logger.error('[POST_PUBLISH][EXCEPTION]task: {}\nexception: \n{}'.format(task_id, traceback.format_exc(ex)))
 
 
 @task_prerun.connect
@@ -70,9 +75,9 @@ def task_pre_run_handler(task_id=None, task=None, args=None, **kwargs):
                 task.pre_run_at = now()
                 task.status = Task.PRE_RUN
                 s.add(task)
-                print('[PRE_RUN]{}'.format(task.task_id if task else ''))
-    except Exception as e:
-        print(traceback.format_exc(e))  # todo: 记录日志
+                cel_logger.info('[PRE_RUN]task: {}'.format(task_id))
+    except Exception as ex:
+        cel_logger.error('[PRE_RUN][EXCEPTION]task: {}\nexception: \n{}'.format(task_id, traceback.format_exc(ex)))
 
 
 @task_postrun.connect
@@ -91,11 +96,12 @@ def task_post_run_handler(task_id=None, task=None, args=None, state=None, retval
                 if state == 'SUCCESS':
                     task.status = Task.SUCCESS
                     task.result = json.dumps(retval, ensure_ascii=False)
+                    cel_logger.info('[POST_RUN][{}]task: {}\nresult: {}'.format(task.status, task_id, task.result))
                 else:
                     task.status = Task.FAILURE
                     task.exception = str(retval)
+                    cel_logger.error('[POST_RUN][{}]task: {}\nexception: \n{}'.format(task.status, task_id, task.exception))
 
                 s.add(task)
-                print('[{}]{}'.format(task.status, task.task_id if task else ''))
-    except Exception as e:
-        print(traceback.format_exc(e))  # todo: 记录日志
+    except Exception as ex:
+        cel_logger.error('[POST_RUN][EXCEPTION]task: {}\nexception: \n{}'.format(task_id, traceback.format_exc(ex)))
