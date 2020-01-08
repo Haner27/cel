@@ -10,7 +10,8 @@ brew cask install docker
 pip install -r requestment
 
 4.启动mysql,rabbitmq服务：
-    *所用到的依赖服务mysql,rabbitmq都是使用docker容器来支持，只是想快速的在本地跑起来，也方便大家可以使用
+    * 所用到的依赖服务mysql,rabbitmq都是使用docker容器来支持，只是想快速的在本地跑起来，也方便大家可以使用,当然，如果有现场的服务，可以跳过这个步骤，直接把服务地址写在
+    * conf/cel.yaml中
     4.1.修改server文件夹下mysql.sh， rabbitmq.sh执行权限：
     chmod +x mysql.sh rabbitmq.sh
 

@@ -2,7 +2,7 @@ import os
 
 import pyaml
 from kombu import Exchange, Queue
-
+from kombu.common import Broadcast
 
 CONF_FILE = 'cel.yaml'
 
@@ -68,15 +68,21 @@ class CeleryConf:
     CELERY_ACKS_LATE = True
     CELERYD_PREFETCH_MULTIPLIER = 1
 
-    EX_COMMON = Exchange('common')
-    # 定义新队列
+    # 定义exchange
+    EX_MQ = Exchange('mq', type='direct')
+    EX_FAN = Exchange('fans', type='fanout')
+    EX_TOPIC = Exchange('topic', type='topic')
+
+    # 定义queue
     CELERY_QUEUES = (
-        Queue('common', exchange=EX_COMMON, routing_key='common'),
-        Queue('mq', exchange=EX_COMMON, routing_key='mq')
+        Queue('mq', exchange=EX_MQ, routing_key='mq'),
+        Queue('fan-1', exchange=EX_FAN),
+        Queue('fan-2', exchange=EX_FAN),  # 绑定同一个fanout模式的exchange的queue,都会收到消息
+        Broadcast(name='fan-3', exchange=EX_FAN),  # 广播模式，监听同一个Broadcast队列的所有worker都能收到消息
+        Queue('topic-1', exchange=EX_TOPIC, routing_key='topic.*'),
+        Queue('topic-2', exchange=EX_TOPIC, routing_key='#.job')
     )
-    CELERY_DEFAULT_QUEUE = 'common'
-    CELERY_DEFAULT_EXCHANGE_TYPE = 'direct'
-    CELERY_DEFAULT_ROUTING_KEY = 'common'
+
 
     def queue_name_list(self):
         return [q.name for q in self.CELERY_QUEUES]
