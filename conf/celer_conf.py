@@ -32,7 +32,6 @@ class CeleryConf:
         Queue('topic-1', exchange=EX_TOPIC, routing_key='topic.*'),
         Queue('topic-2', exchange=EX_TOPIC, routing_key='#.job')
     )
-    CELERY_DEFAULT_QUEUE = 'mq'
 
     def queue_name_list(self):
         return [q.name for q in self.CELERY_QUEUES]

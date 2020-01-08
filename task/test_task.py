@@ -1,5 +1,6 @@
 from mq import celery_app
 from time import sleep
+from task import CallbackTask
 
 __author__ = 'nengfang.han'
 
@@ -7,8 +8,7 @@ __author__ = 'nengfang.han'
 # 消息得决定发往的exchange和自己带有的routing_key
 @celery_app.task(
     bind=True,
-    exchange='mq',
-    routing_key='mq'
+    queue='mq'
 )
 def add(self, x, y):
     """
@@ -22,8 +22,7 @@ def add(self, x, y):
 
 @celery_app.task(
     bind=True,
-    exchange='mq',
-    routing_key='mq'
+    queue='mq'
 )
 def div(self, x, y):
     sleep(1)
