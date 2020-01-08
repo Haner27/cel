@@ -1,9 +1,8 @@
 def test_async():
     from task.test_task import fail, right, add
-    # fail.delay(100, y=2)
+    fail.delay(100, y=2)
     right.delay(27, y=2)
-    # add.delay(100, y=99)
-    # Broadcast
+    add.delay(100, y=99)
 
 
 if __name__ == '__main__':
