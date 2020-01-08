@@ -1,0 +1,4 @@
+celery
+mysqlclient
+sqlalchemy
+pyaml

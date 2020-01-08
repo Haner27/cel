@@ -1,0 +1,8 @@
+syntax: glob
+*.pyc
+*.log
+*.log.*
+*.pickle
+*.db
+__pycache__
+.idea

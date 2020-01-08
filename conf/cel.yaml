@@ -1,0 +1,7 @@
+stage: dev
+log-dir: logs
+rabbitmq:
+  url: amqp://guest:guest@127.0.0.1:5672/
+mysql:
+  db: cel
+  url: mysql+mysqldb://root:123456@127.0.0.1:3306/cel?charset=utf8
